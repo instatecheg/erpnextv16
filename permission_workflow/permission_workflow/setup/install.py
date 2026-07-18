@@ -1,5 +1,7 @@
 import frappe
 
+from permission_workflow.setup.construction_profiles import create_construction_profiles
+
 ROLES = ["Permission Requester", "Permission Approver"]
 
 # (state, doc_status, style)
@@ -31,6 +33,7 @@ def create_permission_workflow():
 	create_workflow_states()
 	create_workflow_actions()
 	create_workflow()
+	create_construction_profiles()
 	frappe.db.commit()
 
 

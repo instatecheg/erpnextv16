@@ -33,6 +33,49 @@ bench as its own app (see below) rather than merged into the `erpnext` app.
   exposed on the standard User form) — this app does not reimplement
   permission plumbing, it only gates *when* that assignment happens behind
   an approval step.
+- A starter set of **Role Profiles** and **Module Profiles** for a
+  construction company, seeded on install so there's something real to pick
+  from a `Permission Request` on day one instead of an empty dropdown. See
+  "Pre-built profiles" below.
+
+## Pre-built profiles
+
+Installing creates one **Module Profile** per department (it hides the
+ERPNext workspaces that department doesn't need) and one **Role Profile**
+per department/level combination (it bundles the existing ERPNext roles
+that match that seniority). Nothing here is invented — every role name is
+one that already ships with ERPNext and already carries real DocType
+permissions; these profiles just group them the way a construction company
+is usually organized:
+
+| Department | Module Profile scope | Levels seeded |
+|---|---|---|
+| Executive | everything | Director |
+| Project & Site Engineering | Projects, Stock, Quality Management, Maintenance, Buying, Setup | Manager, Engineer |
+| Procurement | Buying, Stock, Setup | Manager, Officer |
+| Warehouse & Equipment | Stock, Assets, Maintenance, Setup | Manager, Store Keeper |
+| Finance & Accounts | Accounts, Buying, Selling, Setup | Manager, Accountant |
+| HR & Admin | Setup, Support | Manager, Officer |
+| Business Development | CRM, Selling, Setup | Manager, Executive |
+| Quality & Safety | Quality Management, Projects, Maintenance, Setup | Manager, Inspector |
+| Manufacturing & Fabrication | Manufacturing, Stock, Subcontracting, Setup | Manager, Operator |
+
+Role Profiles are named `<Department> - <Level>`, e.g. `Procurement -
+Officer` or `Project & Site Engineering - Engineer`. The full mapping to
+ERPNext roles lives in
+`permission_workflow/setup/construction_profiles.py` — it's plain Python
+data, so renaming a department, adding a level, or swapping which roles a
+level gets is a matter of editing that list and re-running
+`bench migrate` (creation is idempotent, so existing site customizations
+to these profiles are left alone; it only fills in what's missing).
+
+Two things this does **not** try to do: it doesn't invent new Roles or
+DocType permissions for construction-specific titles (a made-up "Site
+Engineer" role with no `Custom DocPerm` behind it would grant nothing), so
+every profile is built from ERPNext's real roles; and `HR Manager`/`HR
+User` only unlock full HR doctypes if the separate `hrms` app is also
+installed — without it they still grant whatever Project/Task/Timesheet/
+Issue permissions ERPNext ties to those role names.
 
 ## What it deliberately does not do
 
@@ -52,10 +95,10 @@ bench --site <site-name> install-app permission_workflow
 ```
 
 Installing runs `after_install`, which creates the two roles, the four
-`Workflow State` records, the `Workflow Action Master` records, and the
-`Permission Request Approval` workflow itself. Re-running install (or
-`bench migrate`, via the bundled patch) is safe — every step checks for an
-existing record first.
+`Workflow State` records, the `Workflow Action Master` records, the
+`Permission Request Approval` workflow itself, and the pre-built Role/Module
+Profiles described below. Re-running install (or `bench migrate`, via the
+bundled patch) is safe — every step checks for an existing record first.
 
 ## Using it
 

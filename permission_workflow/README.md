@@ -12,7 +12,8 @@ bench as its own app (see below) rather than merged into the `erpnext` app.
 
 ## What it adds
 
-- **Permission Request** doctype (submittable): pick a `User`, a `Role
+- **Permission Request** doctype (submittable): pick a `Request Type`
+  (`New Employee` or `Modify Existing Permission`), a `User`, a `Role
   Profile` and/or `Module Profile`, and a business justification.
 - A **Workflow** ("Permission Request Approval") with four states:
   - `Draft` — editable by the requester.
@@ -61,8 +62,10 @@ existing record first.
 1. Assign the `Permission Requester` role to anyone who should be able to
    request access changes, and `Permission Approver` to whoever reviews
    them.
-2. A requester creates a **Permission Request**, picks the target `User`,
-   a `Role Profile` and/or `Module Profile`, fills in the justification,
+2. A requester creates a **Permission Request**, sets the `Request Type`
+   (onboarding a `New Employee` vs. `Modify Existing Permission` for
+   someone who already has access), picks the target `User`, a
+   `Role Profile` and/or `Module Profile`, fills in the justification,
    and clicks **Submit for Approval**.
 3. An approver opens the request (list filtered to `Pending Approval`),
    adds `Approver Comments`, and clicks **Approve** or **Reject**.

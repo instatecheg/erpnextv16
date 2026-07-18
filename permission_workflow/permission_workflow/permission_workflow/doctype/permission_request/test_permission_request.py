@@ -22,6 +22,7 @@ class TestPermissionRequest(FrappeTestCase):
 		request = frappe.get_doc(
 			{
 				"doctype": "Permission Request",
+				"request_type": "Modify Existing Permission",
 				"user": self.user,
 				"role_profile": self.role_profile,
 				"reason": "Testing the approval workflow.",

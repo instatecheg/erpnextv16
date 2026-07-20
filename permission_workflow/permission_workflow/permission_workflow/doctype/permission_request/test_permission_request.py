@@ -9,11 +9,9 @@ from frappe.tests.utils import FrappeTestCase
 class TestPermissionRequest(FrappeTestCase):
 	def setUp(self):
 		self.user = frappe.db.get_value("User", {"name": ["not in", ["Administrator", "Guest"]]})
-		self.role_profile = frappe.db.get_value("Role Profile", {}, "name")
-		if not self.role_profile:
-			self.role_profile = frappe.get_doc(
-				{"doctype": "Role Profile", "role_profile": "Test Role Profile"}
-			).insert(ignore_permissions=True).name
+		# Ships as a fixture (permission_workflow/fixtures/role_profile.json);
+		# using it here also verifies the fixture synced correctly.
+		self.role_profile = "Finance & Accounts - Accountant"
 
 	def test_request_is_not_applied_until_approved(self):
 		if not self.user:

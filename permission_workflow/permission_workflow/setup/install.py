@@ -1,8 +1,9 @@
 import frappe
 
-from permission_workflow.setup.construction_profiles import create_construction_profiles
-
-ROLES = ["Permission Requester", "Permission Approver"]
+# The Permission Requester / Permission Approver roles and the construction
+# department Role Profiles / Module Profiles ship as fixtures (see
+# permission_workflow/fixtures/) and are synced automatically before this
+# hook runs. Only the Workflow itself is still built imperatively here.
 
 # (state, doc_status, style)
 WORKFLOW_STATES = [
@@ -29,22 +30,10 @@ def after_install():
 
 
 def create_permission_workflow():
-	create_roles()
 	create_workflow_states()
 	create_workflow_actions()
 	create_workflow()
-	create_construction_profiles()
 	frappe.db.commit()
-
-
-def create_roles():
-	for role in ROLES:
-		if not frappe.db.exists("Role", role):
-			frappe.get_doc({
-				"doctype": "Role",
-				"role_name": role,
-				"desk_access": 1,
-			}).insert(ignore_permissions=True)
 
 
 def create_workflow_states():

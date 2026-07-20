@@ -34,19 +34,24 @@ bench as its own app (see below) rather than merged into the `erpnext` app.
   permission plumbing, it only gates *when* that assignment happens behind
   an approval step.
 - A starter set of **Role Profiles** and **Module Profiles** for a
-  construction company, seeded on install so there's something real to pick
-  from a `Permission Request` on day one instead of an empty dropdown. See
-  "Pre-built profiles" below.
+  construction company, shipped as fixtures so there's something real to
+  pick from a `Permission Request` on day one instead of an empty dropdown.
+  See "Pre-built profiles" below.
 
 ## Pre-built profiles
 
-Installing creates one **Module Profile** per department (it hides the
-ERPNext workspaces that department doesn't need) and one **Role Profile**
-per department/level combination (it bundles the existing ERPNext roles
-that match that seniority). Nothing here is invented — every role name is
-one that already ships with ERPNext and already carries real DocType
-permissions; these profiles just group them the way a construction company
-is usually organized:
+`permission_workflow/fixtures/` ships one **Module Profile** per department
+(it hides the ERPNext workspaces that department doesn't need) and one
+**Role Profile** per department/level combination (it bundles the existing
+ERPNext roles that match that seniority), plus the `Permission Requester`
+and `Permission Approver` roles themselves. These are plain Frappe
+[fixtures](https://frappeframework.com/docs/user/en/basics/fixtures) —
+`role.json`, `role_profile.json`, `module_profile.json` — synced
+automatically by `bench migrate` / `bench install-app`, the same mechanism
+ERPNext itself uses to ship reference data. Nothing here is invented —
+every role name is one that already ships with ERPNext and already carries
+real DocType permissions; these profiles just group them the way a
+construction company is usually organized:
 
 | Department | Module Profile scope | Levels seeded |
 |---|---|---|
@@ -61,13 +66,15 @@ is usually organized:
 | Manufacturing & Fabrication | Manufacturing, Stock, Subcontracting, Setup | Manager, Operator |
 
 Role Profiles are named `<Department> - <Level>`, e.g. `Procurement -
-Officer` or `Project & Site Engineering - Engineer`. The full mapping to
-ERPNext roles lives in
-`permission_workflow/setup/construction_profiles.py` — it's plain Python
-data, so renaming a department, adding a level, or swapping which roles a
-level gets is a matter of editing that list and re-running
-`bench migrate` (creation is idempotent, so existing site customizations
-to these profiles are left alone; it only fills in what's missing).
+Officer` or `Project & Site Engineering - Engineer`. To rename a department,
+add a level, or change which roles a level gets, edit the relevant fixture
+JSON directly and run `bench migrate` — fixture sync is an upsert by name,
+so it never overwrites a site's own edits to a profile that already
+diverged from these files, it only creates what's still missing. The
+`fixtures` list in `hooks.py` is filtered to exactly these record names, so
+running `bench export-fixtures` later (after editing profiles on a live
+site) only re-exports this app's own records, not unrelated ones on the
+same site.
 
 Two things this does **not** try to do: it doesn't invent new Roles or
 DocType permissions for construction-specific titles (a made-up "Site
@@ -94,11 +101,13 @@ bench get-app permission_workflow /path/to/permission_workflow
 bench --site <site-name> install-app permission_workflow
 ```
 
-Installing runs `after_install`, which creates the two roles, the four
-`Workflow State` records, the `Workflow Action Master` records, the
-`Permission Request Approval` workflow itself, and the pre-built Role/Module
-Profiles described below. Re-running install (or `bench migrate`, via the
-bundled patch) is safe — every step checks for an existing record first.
+Installing syncs the fixtures (the two roles, and the pre-built Role/Module
+Profiles described below) and then runs `after_install`, which creates the
+four `Workflow State` records, the `Workflow Action Master` records, and the
+`Permission Request Approval` workflow itself. Re-running install (or
+`bench migrate`, via the bundled patch) is safe — fixture sync is an
+upsert, and every step in `after_install` checks for an existing record
+first.
 
 ## Using it
 
